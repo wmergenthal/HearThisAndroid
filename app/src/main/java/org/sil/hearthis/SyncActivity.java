@@ -10,6 +10,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -130,6 +131,7 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
                         final SparseArray<Barcode> barcodes = detections.getDetectedItems();
                         if (scanning && barcodes.size() != 0) {
                             String contents = barcodes.valueAt(0).displayValue;
+                            Log.d("WM", "receiveDetections: QR content = " + contents); // TEMPORARY
                             if (contents != null) {
                                 scanning = false; // don't want to repeat this if it finds the image again
                                 runOnUiThread(new Runnable() {
@@ -174,6 +176,7 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
             }
         });
         String ourIpAddress = getOurIpAddress();
+        Log.d("WM", "onCreateOptionsMenu: ourIpAddress = " + ourIpAddress); // TEMPORARY
         TextView ourIpView = (TextView) findViewById(R.id.our_ip_address);
         ourIpView.setText(ourIpAddress);
         AcceptNotificationHandler.addNotificationListener(this);
