@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-//import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -135,7 +134,7 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
                         final SparseArray<Barcode> barcodes = detections.getDetectedItems();
                         if (scanning && barcodes.size() != 0) {
                             String contents = barcodes.valueAt(0).displayValue;
-                            Log.d("WM", "receiveDetections: QR content = \"" + contents + "\""); // TEMPORARY
+                            Log.d("Sync", "QR content = \"" + contents + "\"");
                             if (contents != null) {
                                 scanning = false; // don't want to repeat this if it finds the image again
                                 runOnUiThread(new Runnable() {
@@ -151,26 +150,20 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
                                                       // provide some users a clue that all is not well.
                                                       ipView.setText(contents);
                                                       preview.setVisibility(View.INVISIBLE);
-                                                      //SendMessage sendMessageTask = new SendMessage();
-                                                      //sendMessageTask.ourIpAddress = getOurIpAddress();
-                                                      //sendMessageTask.execute();
                                                       ExecutorService executor = Executors.newSingleThreadExecutor();
                                                       Handler handler = new Handler(Looper.getMainLooper());
                                                       executor.execute(() -> {
                                                           // Do background work:
-                                                          Log.d("WM", "  executor.execute, begin"); // TEMPORARY
                                                           try {
                                                               String ourIpAddress = getOurIpAddress();
-                                                              Log.d("WM", "  executor.execute, ourIpAddress = " + ourIpAddress); // TEMPORARY
+                                                              Log.d("Sync", "local IP address = " + ourIpAddress);
                                                               String ipAddress = ipView.getText().toString();
-                                                              Log.d("WM", "  executor.execute, ipAddress = " + ipAddress); // TEMPORARY
+                                                              Log.d("Sync", "remote IP address = " + ipAddress);
                                                               InetAddress receiverAddress = InetAddress.getByName(ipAddress);
                                                               DatagramSocket socket = new DatagramSocket();
                                                               byte[] ipBytes = ourIpAddress.getBytes("UTF-8");
                                                               DatagramPacket packet = new DatagramPacket(ipBytes, ipBytes.length, receiverAddress, desktopPort);
-                                                              Log.d("WM", "  executor.execute, sending pkt, ipBytes.length = " + ipBytes.length); // TEMPORARY
                                                               socket.send(packet);
-                                                              Log.d("WM", "  executor.execute, pkt sent"); // TEMPORARY
                                                           } catch (UnknownHostException e) {
                                                               e.printStackTrace();
                                                           } catch (IOException e) {
@@ -178,16 +171,14 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
                                                           }
                                                           handler.post(() -> {
                                                               // Background work done, do foreground work then return:
-                                                              Log.d("WM", "handler.post, ALL DONE"); // TEMPORARY
+                                                              //Log.d("Sync", "handler.post, ALL DONE"); // TEMPORARY
                                                           });
-                                                          Log.d("WM", "  executor.execute, ALL DONE"); // TEMPORARY
                                                       });
                                                       cameraSource.stop();
                                                       cameraSource.release();
                                                       cameraSource = null;
                                                   }
                                               });
-
                             }
                         }
                     }
@@ -250,11 +241,8 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
                     if (inetAddress.isSiteLocalAddress()) {
                         return inetAddress.getHostAddress();
                     }
-
                 }
-
             }
-
         } catch (SocketException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -319,27 +307,4 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
         lastProgress = new Date();
         setProgress("sending " + name);
     }
-
-    // This class is responsible to send one message packet to the IP address we
-    // obtained from the desktop, containing the Android's own IP address.
-    //private class SendMessage extends AsyncTask<Void, Void, Void> {
-    //
-    //    public String ourIpAddress;
-    //    @Override
-    //    protected Void doInBackground(Void... params) {
-    //        try {
-    //            String ipAddress = ipView.getText().toString();
-    //            InetAddress receiverAddress = InetAddress.getByName(ipAddress);
-    //            DatagramSocket socket = new DatagramSocket();
-    //            byte[] buffer = ourIpAddress.getBytes("UTF-8");
-    //            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, receiverAddress, desktopPort);
-    //            socket.send(packet);
-    //        } catch (UnknownHostException e) {
-    //            e.printStackTrace();
-    //        } catch (IOException e) {
-    //            e.printStackTrace();
-    //        }
-    //        return null;
-    //    }
-    //}
 }
