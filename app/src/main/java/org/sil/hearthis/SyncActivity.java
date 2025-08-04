@@ -129,12 +129,13 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
                         // Toast.makeText(getApplicationContext(), "To prevent memory leaks barcode scanner has been stopped", Toast.LENGTH_SHORT).show();
                     }
 
+                    // Replacing 'AsyncTask' with 'Executors' and 'Handlers' in this method is based on:
+                    // https://stackoverflow.com/questions/58767733/the-asynctask-api-is-deprecated-in-android-11-what-are-the-alternatives
                     @Override
                     public void receiveDetections(Detector.Detections<Barcode> detections) {
                         final SparseArray<Barcode> barcodes = detections.getDetectedItems();
                         if (scanning && barcodes.size() != 0) {
                             String contents = barcodes.valueAt(0).displayValue;
-                            Log.d("Sync", "QR content = \"" + contents + "\"");
                             if (contents != null) {
                                 scanning = false; // don't want to repeat this if it finds the image again
                                 runOnUiThread(new Runnable() {
@@ -153,7 +154,7 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
                                                       ExecutorService executor = Executors.newSingleThreadExecutor();
                                                       Handler handler = new Handler(Looper.getMainLooper());
                                                       executor.execute(() -> {
-                                                          // Do background work:
+                                                          // Background work: send UDP packet to IP address given in the QR code.
                                                           try {
                                                               String ourIpAddress = getOurIpAddress();
                                                               Log.d("Sync", "local IP address = " + ourIpAddress);
@@ -170,8 +171,7 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
                                                               e.printStackTrace();
                                                           }
                                                           handler.post(() -> {
-                                                              // Background work done, do foreground work then return:
-                                                              //Log.d("Sync", "handler.post, ALL DONE"); // TEMPORARY
+                                                              // Background work done, no foreground/UI work needed.
                                                           });
                                                       });
                                                       cameraSource.stop();
