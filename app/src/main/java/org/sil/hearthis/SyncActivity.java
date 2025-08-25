@@ -59,6 +59,7 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sync);
         getSupportActionBar().setTitle(R.string.sync_title);
+        Log.d("Sync", "onCreate, calling startSyncServer()");
         startSyncServer();
         progressView = (TextView) findViewById(R.id.progress);
         continueButton = (Button) findViewById(R.id.continue_button);
@@ -77,12 +78,15 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
     private void startSyncServer() {
         Intent serviceIntent = new Intent(this, SyncService.class);
         startService(serviceIntent);
+        Log.d("Sync", "startSyncServer, started service");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d("Sync", "onResume, calling AcceptFileHandler.requestFileReceivedNotification()");
         AcceptFileHandler.requestFileReceivedNotification(this);
+        Log.d("Sync", "onResume, calling RequestFileHandler.requestFileSentNotification()");
         RequestFileHandler.requestFileSentNotification((this));
     }
 
@@ -267,19 +271,30 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
         return super.onOptionsItemSelected(item);
     }
 
+    // WM: why is 'message' passed in? Seems to be unused...
     @Override
     public void onNotification(String message) {
+        Log.d("Sync", "onNotification, called with " + message);
         AcceptNotificationHandler.removeNotificationListener(this);
-        setProgress(getString(R.string.sync_success));
+        //setProgress(getString(R.string.sync_success));
+        if (message.equals("sync_success") ) {
+            Log.d("Sync", "onNotification, calling setProgress(sync_success)");
+            setProgress(getString(R.string.sync_success));
+        } else {
+            Log.d("Sync", "onNotification, calling setProgress(sync_interrupted)");
+            setProgress(getString(R.string.sync_interrupted));
+        }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 continueButton.setEnabled(true);
+                Log.d("Sync", "onNotification, continue button enabled");
             }
         });
     }
 
     void setProgress(final String text) {
+        Log.d("Sync", "setProgress, called with " + text);
         runOnUiThread(new Runnable() {
             public void run() {
                 progressView.setText(text);
@@ -298,6 +313,7 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
             return;
         lastProgress = new Date();
         setProgress("receiving " + name);
+        Log.d("Sync", "receivingFile, name = " + name);
     }
 
     @Override
@@ -306,5 +322,6 @@ public class SyncActivity extends AppCompatActivity implements AcceptNotificatio
             return;
         lastProgress = new Date();
         setProgress("sending " + name);
+        Log.d("Sync", "sendingFile, name = " + name);
     }
 }
